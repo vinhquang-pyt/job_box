@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% macro render_field(field) %}
+<div class="form-group">
+    {% if field.name != "Submit" %}
+    {{ field.label }}
+    {% endif %}
+    {{ field(class="form-control") }}
+</div>
+{% endmacro %}
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12">
+            <legend>Job Application</legend>
+            <form method="POST" action="{{ url_for('apply') }}">
+                {{ form.csrf_token }}
+                {{ render_field(form.first_name) }}
+                {{ render_field(form.last_name) }}
+                {{ render_field(form.email) }}
+                {{ render_field(form.resume) }}
+
+                {{ render_field(form.submit) }}
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
