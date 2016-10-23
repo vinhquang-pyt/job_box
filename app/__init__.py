@@ -1,5 +1,6 @@
 from flask import *
 from forms import ApplicationForm
+from functools import wraps
 
 def create_app():
     app = Flask(__name__)
@@ -9,13 +10,26 @@ def create_app():
     def index():
         return render_template('index.html')
 
-    # @app.route('/login')
-    # def login():
-    #     return render_template('login.html')
+    def login_required(test):
+        @wraps(test)
+        def wrap(*args, **kwargs):
+            if 'logged_in' in session:
+                return test(*args, **kwargs)
+            else:
+                flash('You need to login first')
+                return redirect(url_for('login'))
+        return wrap
 
     @app.route('/hello')
+    @login_required
     def hello():
         return render_template('hello.html')
+
+    @app.route('/logout')
+    def logout():
+        session.pop('logged_in', None)
+        flash('You were logged_out')
+        return redirect (url_for('login'))
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
@@ -24,6 +38,7 @@ def create_app():
             if request.form['username'] != 'admin' or request.form['password'] != 'admin':
                 error = 'Invalid Credentials. Please try again.'
             else:
+                session['logged_in'] = True
                 return redirect(url_for('hello'))
         return render_template('login.html', error=error)
 
@@ -33,7 +48,5 @@ def create_app():
         if form.validate_on_submit():
             return 'Thanks for applying'
         return render_template('application.html', form = form)
-
-
 
     return app
